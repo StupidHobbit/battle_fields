@@ -1,6 +1,8 @@
 import pyglet
+from pyglet.gl import *
 
 from client.gui import Gui
+from client.map import Map
 
 
 GUI_GROUP_NUM = 100
@@ -11,6 +13,13 @@ class Game():
         self.units = {}
         self.player_id = -1
         self.batch = pyglet.graphics.Batch()
-        self.groups = []
-        gui_group = pyglet.graphics.OrderedGroup(GUI_GROUP_NUM)
-        self.gui = Gui(window, self.batch, gui_group)
+        self.gui_group = pyglet.graphics.OrderedGroup(GUI_GROUP_NUM)
+        self.gui = Gui(window, self.batch, self.gui_group)
+        self.map = Map(self.batch)
+
+        @window.event
+        def on_draw():
+            window.clear()
+            self.batch.draw()
+
+## def
