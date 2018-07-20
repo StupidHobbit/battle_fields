@@ -3,17 +3,20 @@ from pyglet.gl import *
 
 from client.gui import Gui
 from client.map import Map
-
-
-GUI_GROUP_NUM = 100
+from client.config import *
+from client.camera import Camera
 
 
 class Game():
+    def update_from_server(self, dt):
+        pass
+
     def __init__(self, window):
         self.units = {}
         self.player_id = -1
         self.batch = pyglet.graphics.Batch()
         self.gui_group = pyglet.graphics.OrderedGroup(GUI_GROUP_NUM)
+        self.units_group = pyglet.graphics.OrderedGroup(GUI_GROUP_NUM)
         self.gui = Gui(window, self.batch, self.gui_group)
         self.map = Map(self.batch)
 
