@@ -1,2 +1,1 @@
-from sympy.geometry import Point
-
+from sympy.geometry import Point2D as Point

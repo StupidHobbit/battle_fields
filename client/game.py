@@ -4,6 +4,7 @@ from pyglet.gl import *
 from client.gui import Gui
 from client.map import Map
 from client.config import *
+from client.camera import Camera
 
 
 class Game():
