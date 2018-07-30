@@ -1,10 +1,11 @@
 import pyglet
 
 from client.resources import tiled_map
+from client.render_manager import batch
 
 
 class Map:
-    def __init__(self, batch):
+    def __init__(self):
         self.groups = []
         tilewidth, tileheight = tiled_map.tilewidth, tiled_map.tileheight
         height = tiled_map.height - 1

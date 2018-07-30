@@ -53,7 +53,7 @@ class GameClient(socket):
         """
         pass
 
-    def action(self, name: str, target_id: str, coordinates: Coord, direction: float):
+    def action(self, name: str, target_id: ID, coordinates: Coord):
         """
         Send command about making some action. Can be rejected
         """
