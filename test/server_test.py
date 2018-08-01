@@ -1,21 +1,19 @@
 import unittest
 import socket
 import json
-from queue import Queue
-from server.game_server import *
+from server.game import Game
+import redis
+from timeit import timeit
 
 
 class TestServerMethods(unittest.TestCase):
-    def setUp(self):
-        queue = Queue()
-        server = GameServer(queue)
-        self.server = server
-        self.queue = queue
-        server.start()
-        ip, port = server.server_address
+    @classmethod
+    def setUpClass(cls):
+        cls.game = Game()
+        ip, port = cls.game.server.server_address
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((ip, port))
-        self.sock = sock
+        cls.sock = sock
 
     def test_connection(self):
         data = json.dumps({"command": "PING"})
@@ -24,9 +22,36 @@ class TestServerMethods(unittest.TestCase):
         self.assertIn("text", ans, "Wrong format returned")
         self.assertEqual(ans["text"], "Hello world")
 
-    def tearDown(self):
-        self.server.stop()
-        self.sock.close()
+    def test_info(self):
+        data = json.dumps({"command": "INFO"})
+        self.sock.sendall(data.encode())
+        ans = json.loads(self.sock.recv(1024).decode())
+        self.assertIn("players", ans, "Wrong format returned")
+        self.assertEqual(ans["players"], 666)
+
+    def test_auth(self):
+        data = json.dumps({"command": "AUTH", "key": "1234"})
+        self.sock.sendall(data.encode())
+        ans = json.loads(self.sock.recv(1024).decode())
+        self.assertIn("status", ans, "Wrong format returned")
+        self.assertEqual(ans["status"], 200)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.sock.close()
+        cls.game.shutdown()
+
+
+class TestRedisPerfomance(unittest.TestCase):
+    def test_units(self):
+        r = redis.Redis(unix_socket_path='/tmp/redis.sock')
+        r.hmset("unit1", {'x': 100, 'y': 200, 'hp': 10})
+        for i in range(10000):
+            x, y, hp = map(int, r.hvals("unit1"))
+            x += 1
+            y += 1
+            hp += 1
+            r.hmset("unit1", {'x': x, 'y': y, 'hp': hp})
 
 
 if __name__ == '__main__':

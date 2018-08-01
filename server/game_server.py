@@ -6,7 +6,7 @@ from queue import Queue
 from time import sleep
 
 
-HOST, PORT = "localhost", 1310
+HOST, PORT = "localhost", 1488
 PACKET_SIZE = 8096
 SLEEP_TIME = 0.02
 
@@ -20,22 +20,30 @@ class GameHandler(socketserver.BaseRequestHandler):
                     data = json.loads(data.decode())
                     command = data.get('command')
                     ans = getattr(self, command, self.default)(data)
-                    self.request.sendall(ans.encode())
+                    self.request.sendall(json.dumps(ans).encode())
                 sleep(SLEEP_TIME)
         #finally:
         #    self.stop()
 
     def default(self, data):
-        return json.dumps({"text": "Hello world", 'status': 200})
+        return {"text": "Hello world", 'status': 200}
 
-    def INFO(self):
+    def INFO(self, data):
+        return {"players": 666, 'status': 200}
+
+    def AUTH(self, data):
+        return {'status': 200}
+
+    def ADCH(self, data):
         pass
 
 
+
 class GameServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    def __init__(self, queue, address=(HOST, PORT), handler=GameHandler):
+    def __init__(self, incoming_queue, outcoming_queue, address=(HOST, PORT), handler=GameHandler):
         super().__init__(address, handler)
-        self.queue = queue
+        self.incoming_queue = incoming_queue
+        self.outcoming_queue = outcoming_queue
         self.closed = False
 
     def start(self):
@@ -53,23 +61,7 @@ class GameServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 
 
+
 class ServerException(Exception):
     """Base class for server exceptions"""
     pass
-
-
-
-if __name__ == '__main__':
-    queue = Queue()
-    server = GameServer(queue)
-    server.start()
-    ip, port = server.server_address
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ip, port))
-
-    data = json.dumps({"command": "PING"})
-    sock.sendall(data.encode())
-    ans = json.loads(sock.recv(1024).decode())
-    print(ans)
-    sock.close()
-    server.stop()
