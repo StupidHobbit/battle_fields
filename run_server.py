@@ -1,6 +1,12 @@
 import asyncio
-from server.game_server import GameHandler
+import time
+from sys import stdout
+import os
+
+import uvloop
 import redis
+
+from server.game_server import GameHandler
 from server.config import REDIS_SOCKET_PATH
 
 
@@ -8,14 +14,10 @@ HOST, PORT = "localhost", 1488
 PACKET_SIZE = 8096
 
 
-try:
-    r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH)
-except:
-    import os
-    print('1')
-    os.system("redis/src/redis-server ../../redis.conf")
-    r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH)
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
+if not os.path.exists(REDIS_SOCKET_PATH):
+    os.system("./run_redis.sh")
 
 loop = asyncio.get_event_loop()
 # Each client connection will create a new protocol instance

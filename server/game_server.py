@@ -4,8 +4,11 @@ import threading
 import socketserver
 import json
 
+import redis
+
 from queue import Queue
 from time import sleep
+from server.config import REDIS_SOCKET_PATH
 
 
 HOST, PORT = "localhost", 1488
@@ -18,6 +21,7 @@ class GameHandler(asyncio.Protocol):
         peername = transport.get_extra_info('peername')
         print('Connection from {}'.format(peername))
         self.transport = transport
+        self.r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH)
 
     def data_received(self, data):
         message = json.loads(data.decode())
@@ -39,31 +43,12 @@ class GameHandler(asyncio.Protocol):
         return {'status': 200}
 
     def ADCH(self, data):
+        id = self.r.incr('players')
+        self.r.hmset(b'char'+bytes(id), {'name': data['name'], 'cls': data['cls']})
+        return {'id': id, 'status': 200}
+
+    def ENGM(self, data):
         pass
-
-
-
-class GameServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    def __init__(self, incoming_queue, outcoming_queue, address=(HOST, PORT), handler=GameHandler):
-        super().__init__(address, handler)
-        self.incoming_queue = incoming_queue
-        self.outcoming_queue = outcoming_queue
-        self.closed = False
-
-    def start(self):
-        server_thread = threading.Thread(target=self.serve_forever)
-        self.thread = server_thread
-        # Exit the server thread when the main thread terminates
-        #server_thread.daemon = True
-        server_thread.start()
-
-    def stop(self):
-        print("Closing server...")
-        self.closed = True
-        self.shutdown()
-        self.server_close()
-
-
 
 
 class ServerException(Exception):

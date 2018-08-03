@@ -15,26 +15,36 @@ class TestServerMethods(unittest.TestCase):
         sock.connect((HOST, PORT))
         cls.sock = sock
 
-    def test_connection(self):
-        data = json.dumps({"command": "PING"})
+    def send_request(self, command, **kwargs):
+        kwargs['command'] = command
+        data = json.dumps(kwargs)
         self.sock.sendall(data.encode())
-        ans = json.loads(self.sock.recv(1024).decode())
+        return json.loads(self.sock.recv(1024).decode())
+
+    def test_connection(self):
+        ans = self.send_request('PING')
         self.assertIn("text", ans, "Wrong format returned")
         self.assertEqual(ans["text"], "Hello world")
 
     def test_info(self):
-        data = json.dumps({"command": "INFO"})
-        self.sock.sendall(data.encode())
-        ans = json.loads(self.sock.recv(1024).decode())
+        ans = self.send_request('INFO')
         self.assertIn("players", ans, "Wrong format returned")
-        self.assertEqual(ans["players"], 666)
+        players = ans["players"]
+
 
     def test_auth(self):
-        data = json.dumps({"command": "AUTH", "key": "1234"})
-        self.sock.sendall(data.encode())
-        ans = json.loads(self.sock.recv(1024).decode())
+        ans = self.send_request('AUTH', key='123')
         self.assertIn("status", ans, "Wrong format returned")
         self.assertEqual(ans["status"], 200)
+
+    def test_adch(self):
+        ans = self.send_request('ADCH', name='Bill', cls='warrior')
+        self.assertIn("id", ans, "Wrong format returned")
+        id = ans["id"]
+        ans = self.send_request('ADCH', name='Bill', cls='warrior')
+        self.assertNotEqual(ans["id"], id, "Same id returned")
+
+
 
     @classmethod
     def tearDownClass(cls):
