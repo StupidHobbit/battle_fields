@@ -1,18 +1,18 @@
 import unittest
 import socket
 import json
-from server.game import Game
 import redis
 from timeit import timeit
+
+
+HOST, PORT = "localhost", 1488
 
 
 class TestServerMethods(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.game = Game()
-        ip, port = cls.game.server.server_address
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((ip, port))
+        sock.connect((HOST, PORT))
         cls.sock = sock
 
     def test_connection(self):
@@ -39,7 +39,6 @@ class TestServerMethods(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.sock.close()
-        cls.game.shutdown()
 
 
 class TestRedisPerfomance(unittest.TestCase):

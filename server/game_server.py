@@ -1,7 +1,9 @@
 import socket
+import asyncio
 import threading
 import socketserver
 import json
+
 from queue import Queue
 from time import sleep
 
@@ -11,19 +13,21 @@ PACKET_SIZE = 8096
 SLEEP_TIME = 0.02
 
 
-class GameHandler(socketserver.BaseRequestHandler):
-    def handle(self):
-        #try:
-            while not self.server.closed:
-                data = self.request.recv(PACKET_SIZE)
-                if data:
-                    data = json.loads(data.decode())
-                    command = data.get('command')
-                    ans = getattr(self, command, self.default)(data)
-                    self.request.sendall(json.dumps(ans).encode())
-                sleep(SLEEP_TIME)
-        #finally:
-        #    self.stop()
+class GameHandler(asyncio.Protocol):
+    def connection_made(self, transport):
+        peername = transport.get_extra_info('peername')
+        print('Connection from {}'.format(peername))
+        self.transport = transport
+
+    def data_received(self, data):
+        message = json.loads(data.decode())
+        print('Data received: {!r}'.format(message))
+        command = message.get('command', '')
+
+        ans = getattr(self, command, self.default)(message)
+        message = json.dumps(ans)
+        print('Send: {!r}'.format(message))
+        self.transport.write(message.encode())
 
     def default(self, data):
         return {"text": "Hello world", 'status': 200}

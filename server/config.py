@@ -1,0 +1,1 @@
+REDIS_SOCKET_PATH = '/tmp/redis.sock'
