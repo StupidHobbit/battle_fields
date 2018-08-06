@@ -1,32 +1,27 @@
-from queue import Queue
-from server.game_server import GameServer
-import socket
-import json
+
 
 
 class Game:
     def __init__(self):
-        self.incoming_queue = Queue()
-        self.outcoming_queue = Queue()
-        server = GameServer(self.incoming_queue, self.outcoming_queue)
-        server.start()
-        self.server = server
-        self.units = {}
-        self.characters = {}
+        pass
 
     def shutdown(self):
-        self.server.stop()
+        pass
 
 
 if __name__ == '__main__':
-    game = Game()
-    ip, port = game.server.server_address
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ip, port))
+    import math
+    from multiprocessing.dummy import Pool as ThreadPool
 
-    data = json.dumps({"command": "PING"})
-    sock.sendall(data.encode())
-    ans = json.loads(sock.recv(1024).decode())
-    print(ans)
-    sock.close()
-    game.shutdown()
+    # Make the Pool of workers
+    pool = ThreadPool(4)
+
+    # Open the urls in their own threads
+    # and return the results
+    results = pool.map(math.sqrt, range(100))
+
+    # close the pool and wait for the work to finish
+    pool.close()
+    pool.join()
+
+    print(results)

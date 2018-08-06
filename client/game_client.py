@@ -1,5 +1,5 @@
 import json
-from socket import socket
+import socket
 from typing import List, Tuple, AnyStr
 
 

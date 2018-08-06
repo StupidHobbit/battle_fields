@@ -2,6 +2,7 @@ import asyncio
 import time
 from sys import stdout
 import os
+from signal import SIG_DFL
 
 import uvloop
 import redis
@@ -17,7 +18,10 @@ PACKET_SIZE = 8096
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 if not os.path.exists(REDIS_SOCKET_PATH):
-    os.system("./run_redis.sh")
+    pid = os.fork()
+    if not pid:
+        os.system("./run_redis.sh")
+        exit(0)
 
 loop = asyncio.get_event_loop()
 # Each client connection will create a new protocol instance
@@ -35,3 +39,5 @@ except KeyboardInterrupt:
 server.close()
 loop.run_until_complete(server.wait_closed())
 loop.close()
+
+os.kill(pid, SIG_DFL)

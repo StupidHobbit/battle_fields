@@ -1,6 +1,6 @@
 import pyglet
 
-from client.resources import tiled_map
+from utilities.resources import tiled_map
 from client.render_manager import batch
 
 
