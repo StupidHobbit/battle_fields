@@ -1,10 +1,12 @@
 import unittest
-if __name__ == '__main__':
-    import sys
-    sys.path.append('./client')
-from game_client import GameClient
 import json
 import redis
+if __name__ == '__main__':
+    import sys
+    sys.path.append('./')
+from client.game_client import GameClient
+from utilities import Point
+from server.config import REDIS_SOCKET_PATH
 from timeit import timeit
 
 
@@ -32,8 +34,16 @@ class TestServerMethods(unittest.TestCase):
 
     def test_adch(self):
         id1 = self.game_client.add_character(name='Bill', cls='warrior')
-        id2 = self.game_client.add_character(name='Bill', cls='warrior')
+        id2 = self.game_client.add_character(name='Ann', cls='warrior')
         self.assertNotEqual(id1, id2, "Same id returned")
+
+    def test_move(self):
+        id = self.game_client.add_character(name='Dad', cls='warrior')
+        self.game_client.enter_game(id)
+        self.game_client.move(Point(1, 2))
+        r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH)
+        dad = r.hgetall(b'unit'+bytes(id))
+        self.assertEqual((dad['dx'], dad['dy']), (1, 2))
 
 
 
