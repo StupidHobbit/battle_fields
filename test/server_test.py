@@ -1,5 +1,8 @@
 import unittest
-from client.game_client import GameClient
+if __name__ == '__main__':
+    import sys
+    sys.path.append('./client')
+from game_client import GameClient
 import json
 import redis
 from timeit import timeit
@@ -14,7 +17,7 @@ class TestServerMethods(unittest.TestCase):
         cls.game_client = GameClient(HOST, PORT)
 
     def test_connection(self):
-        ans = self.game_client.sock.send_request('PING')
+        ans = self.game_client.send_request('PING')
         self.assertIn("text", ans, "Wrong format returned")
         self.assertEqual(ans["text"], "Hello world")
 
