@@ -48,7 +48,7 @@ class GameHandler(asyncio.Protocol):
         return {'id': id, 'status': 200}
 
     def ENGM(self, data):
-        pass
+        return {'status': 200}
 
 
 class ServerException(Exception):

@@ -1,5 +1,5 @@
 import unittest
-import socket
+from client.game_client import GameClient
 import json
 import redis
 from timeit import timeit
@@ -11,44 +11,32 @@ HOST, PORT = "localhost", 1488
 class TestServerMethods(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((HOST, PORT))
-        cls.sock = sock
-
-    def send_request(self, command, **kwargs):
-        kwargs['command'] = command
-        data = json.dumps(kwargs)
-        self.sock.sendall(data.encode())
-        return json.loads(self.sock.recv(1024).decode())
+        cls.game_client = GameClient(HOST, PORT)
 
     def test_connection(self):
-        ans = self.send_request('PING')
+        ans = self.game_client.sock.send_request('PING')
         self.assertIn("text", ans, "Wrong format returned")
         self.assertEqual(ans["text"], "Hello world")
 
     def test_info(self):
-        ans = self.send_request('INFO')
+        ans = self.game_client.info()
         self.assertIn("players", ans, "Wrong format returned")
         players = ans["players"]
 
-
     def test_auth(self):
-        ans = self.send_request('AUTH', key='123')
-        self.assertIn("status", ans, "Wrong format returned")
-        self.assertEqual(ans["status"], 200)
+        ans = self.game_client.auth(key='123')
+        self.assertEqual(ans, True)
 
     def test_adch(self):
-        ans = self.send_request('ADCH', name='Bill', cls='warrior')
-        self.assertIn("id", ans, "Wrong format returned")
-        id = ans["id"]
-        ans = self.send_request('ADCH', name='Bill', cls='warrior')
-        self.assertNotEqual(ans["id"], id, "Same id returned")
+        id1 = self.game_client.add_character(name='Bill', cls='warrior')
+        id2 = self.game_client.add_character(name='Bill', cls='warrior')
+        self.assertNotEqual(id1, id2, "Same id returned")
 
 
 
     @classmethod
     def tearDownClass(cls):
-        cls.sock.close()
+        pass
 
 
 class TestRedisPerfomance(unittest.TestCase):
