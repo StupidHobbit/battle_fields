@@ -1,7 +1,7 @@
 import json
 import socket
 from typing import List, Tuple, AnyStr
-
+from utilities import Point
 
 Characters = List[dict]
 Coord = Tuple[float, float]
@@ -58,11 +58,11 @@ class GameClient():
         """
         return self.send_request('NEXT')['characters']
 
-    def move(self, velocity: Coord):
+    def move(self, point: Point):
         """
         Send command about changing player's direction of  movement
         """
-        self.send_request('MOVE', velocity=velocity)
+        self.send_request('MOVE', dx=point.x, dy=point.y)
 
     def message(self, text: str):
         """
