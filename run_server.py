@@ -23,6 +23,10 @@ if not os.path.exists(REDIS_SOCKET_PATH):
         os.system("./run_redis.sh")
         exit(0)
 
+time.sleep(1)
+r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH)
+r.flushall()
+
 loop = asyncio.get_event_loop()
 # Each client connection will create a new protocol instance
 coro = loop.create_server(GameHandler, HOST, PORT)

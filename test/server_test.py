@@ -3,6 +3,8 @@ from client.game_client import GameClient
 import json
 import redis
 from timeit import timeit
+from random import random
+from time import sleep
 
 
 HOST, PORT = "localhost", 1488
@@ -14,7 +16,7 @@ class TestServerMethods(unittest.TestCase):
         cls.game_client = GameClient(HOST, PORT)
 
     def test_connection(self):
-        ans = self.game_client.sock.send_request('PING')
+        ans = self.game_client.send_request('PING')
         self.assertIn("text", ans, "Wrong format returned")
         self.assertEqual(ans["text"], "Hello world")
 
@@ -27,10 +29,16 @@ class TestServerMethods(unittest.TestCase):
         ans = self.game_client.auth(key='123')
         self.assertEqual(ans, True)
 
-    def test_adch(self):
-        id1 = self.game_client.add_character(name='Bill', cls='warrior')
-        id2 = self.game_client.add_character(name='Bill', cls='warrior')
+    def  test_adch(self):
+        id1 = self.game_client.add_character(name='Jhon1', cls='warrior')
+        id2 = self.game_client.add_character(name='Jhon2', cls='warrior')
         self.assertNotEqual(id1, id2, "Same id returned")
+
+    def test_next(self):
+        id = self.game_client.add_character(name=str(random()), cls='warrior')
+        self.game_client.enter_game(id)
+        self.game_client.get_message()
+        sleep(30)
 
 
 
@@ -49,6 +57,15 @@ class TestRedisPerfomance(unittest.TestCase):
             y += 1
             hp += 1
             r.hmset("unit1", {'x': x, 'y': y, 'hp': hp})
+
+    def test_geo(self):
+        r = redis.Redis(unix_socket_path='/tmp/redis.sock')
+        for i in range(10):
+            r.geoadd('geotest', random() / 1000, random() / 1000, -i)
+        for i in range(10000):
+            d = r.georadiusbymember('geotest', 0, 50)
+        print(d)
+
 
 
 if __name__ == '__main__':

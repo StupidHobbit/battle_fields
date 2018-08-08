@@ -21,7 +21,10 @@ class GameHandler(asyncio.Protocol):
         peername = transport.get_extra_info('peername')
         print('Connection from {}'.format(peername))
         self.transport = transport
-        self.r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH)
+        self.r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH, decode_responses=True)
+        self.pool = Pool(5)
+        self.id = 0
+        self.unit_name = ''
 
     def data_received(self, data):
         message = json.loads(data.decode())
@@ -38,45 +41,55 @@ class GameHandler(asyncio.Protocol):
         return {"text": "Hello world", 'status': 200}
 
     def INFO(self, data):
-        return {"players": self.r.get('players').decode(), 'status': 200}
+        return {"players": self.r.get('players'), 'status': 200}
 
     def AUTH(self, data):
         return {'status': 200}
 
     def ADCH(self, data):
         id = self.r.incr('next_id')
-        if self.r.sismember('names', data['name']):
+        name = data['name']
+        if self.r.sismember('names', name):
             return {'status': 300}
-        char_name = b'char' + bytes(id)
-
-        self.r.hmset(char_name, {'name': data['name'], 'cls': data['cls']})
+        self.r.sadd('names', name)
+        char_name = 'char' + str(id)
+        self.r.hmset(char_name, {'name': name, 'cls': data['cls']})
         return {'id': id, 'status': 200}
 
     def ENGM(self, data):
         id = data['id']
-        unit_name = b'unit'+bytes(id)
+        unit_name = 'unit'+str(id)
         if self.r.exists(unit_name):
            return {'status': 300}
-        char = self.r.hgetall(b'char'+bytes(id))
+        char = self.r.hgetall('char'+str(id))
         if not char:
             return {"status": 400}
         self.id = id
         self.unit_name = unit_name
         x, y = randint(0, MAP_WIDTH-1), randint(0, MAP_HEIGHT-1)
-        char[b'x'], char[b'y'] = x, y
+        char['x'], char['y'] = x, y
         self.r.geoadd('map', *get_lon_lat(x, y), self.id)
-        char[b'dx'], char[b'dy'] = 0, 0
+        char['dx'], char['dy'] = 0, 0
         self.r.hmset(unit_name, char)
         return {'status': 200}
 
     def MOVE(self, data):
+        if not self.id: return
         self.r.hmset(self.unit_name, {'dx': data['dx'], 'dy': data['dy']})
 
     def NEXT(self, data):
+        if not self.id: return
         chars_id = self.r.georadiusbymember('map', self.id, VIEW_RADIUS)
-        print(chars_id)
-        pool = Pool(5)
-        #pool.map()
+        chars_bd_names = ['unit' + s for s in chars_id]
+        print(chars_bd_names)
+        res = self.pool.map(self.r.hgetall, chars_bd_names)
+        return res
+
+    def connection_lost(self, exc):
+        if not self.id: return
+        self.r.delete(self.unit_name)
+        self.r.zrem('map', self.id)
+
 
 
 
