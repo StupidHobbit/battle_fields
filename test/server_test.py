@@ -45,10 +45,10 @@ class TestServerMethods(unittest.TestCase):
         self.game_client.enter_game(id)
         self.game_client.move(Point(1, 2))
         for x in self.game_client.get_message():
-            if x.id == id:
-                self.assertIn(x.name, name, "Wrong name")
-                self.assertIn(x.cls, cls, "Wrong class")
-                self.assertIn((x.dx, x.dy), (1, 2), "Wrong move method")
+            if x['id'] == str(id):
+                self.assertEqual(x['name'], name, "Wrong name")
+                self.assertEqual(x['cls'], cls, "Wrong class")
+                self.assertEqual((x['dx'], x['dy']), ('1', '2'), "Wrong move method")
                 break
         else:
             raise Exception('Missing character')
@@ -77,7 +77,6 @@ class TestRedisPerfomance(unittest.TestCase):
             r.geoadd('geotest', random() / 1000, random() / 1000, -i)
         for i in range(10000):
             d = r.georadiusbymember('geotest', 0, 50)
-        print(d)
 
 
 

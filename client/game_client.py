@@ -16,13 +16,12 @@ class GameClient():
     def __del__(self):
         self.sock.close()
 
-    def send_request(self, command, **kwargs):
+    def send_request(self, command, back=True, **kwargs):
         kwargs['command'] = command
         data = json.dumps(kwargs)
         self.sock.sendall(data.encode())
-        data = self.sock.recv(1024)
-        if data:
-            return json.loads(data.decode())
+        if back:
+            return json.loads(self.sock.recv(1024).decode())
 
     def auth(self, key: str):
         """
@@ -62,19 +61,19 @@ class GameClient():
         """
         Send command about changing player's direction of  movement
         """
-        self.send_request('MOVE', dx=point.x, dy=point.y)
+        self.send_request('MOVE', back=False, dx=point.x, dy=point.y)
 
     def message(self, text: str):
         """
         Post a message from player
         """
-        self.send_request('MESG', text=text)
+        self.send_request('MESG', back=False, text=text)
 
     def action(self, name: str, id: ID, coord: Coord):
         """
         Send command about making some action. Can be rejected
         """
-        self.send_request('ACTN', name=name, id=id, coord=coord)
+        self.send_request('ACTN', back=False, name=name, id=id, coord=coord)
 
     def sync(self):
         pass
