@@ -72,6 +72,7 @@ class GameHandler(asyncio.Protocol):
         self.r.geoadd('map', *get_lon_lat(x, y), self.id)
         char['dx'], char['dy'] = 0, 0
         self.r.hmset(unit_name, char)
+        self.r.publish('new_units', unit_name)
         return {'status': 200}
 
     def MOVE(self, data):
@@ -90,6 +91,7 @@ class GameHandler(asyncio.Protocol):
         if not self.id: return
         self.r.delete(self.unit_name)
         self.r.zrem('map', self.id)
+        self.r.publish('deleted_units', self.unit_name)
 
 
 
