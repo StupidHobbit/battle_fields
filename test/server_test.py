@@ -29,7 +29,7 @@ class TestServerMethods(unittest.TestCase):
         ans = self.game_client.auth(key='123')
         self.assertEqual(ans, True)
 
-    def  test_adch(self):
+    def test_adch(self):
         id1 = self.game_client.add_character(name='Jhon1', cls='warrior')
         id2 = self.game_client.add_character(name='Jhon2', cls='warrior')
         self.assertNotEqual(id1, id2, "Same id returned")
@@ -38,7 +38,6 @@ class TestServerMethods(unittest.TestCase):
         id = self.game_client.add_character(name=str(random()), cls='warrior')
         self.game_client.enter_game(id)
         self.game_client.get_message()
-        sleep(30)
 
 
 
