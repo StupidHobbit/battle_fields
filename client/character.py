@@ -4,20 +4,20 @@ from utilities import Point
 
 
 class Unit:
-    def __init__(self, name: str, pos: Point=Point(0, 0)):
+    def __init__(self, id: int, name: str, pos: Point, dir: Point):
+        self.id = id
         self.name = name
         self.pos = pos
-        self.v = Point(2, 2)
+        self.dir = dir
+        self.speed = 2
 
     def update(self, dt: float):
-        self.pos = self.v * dt
+        self.pos += self.dir * dt
 
 class Character(Unit):
-    def __init__(self, name: str, nick: str, batch, group, pos: Point=Point(0, 0)):
-        Unit.__init__(self, name, pos)
+    def __init__(self, id: int, name: str, pos: Point, dir: Point, nick: str):
+        Unit.__init__(self, id, name, pos, dir)
         self.nick = nick
-        self.batch = batch
-        self.group = group
         self.max_hp = 2 # Will load
         self.hp = self.max_hp
 

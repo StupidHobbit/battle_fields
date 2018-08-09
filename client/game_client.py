@@ -49,6 +49,7 @@ class GameClient():
         Start a game with given character. After that messages from server can be accessed by get_message
         """
         ans = self.send_request('ENGM', id=character_id)
+        self.player_id = character_id
         return ans['status'] == 200
 
     def get_message(self) -> Characters:
