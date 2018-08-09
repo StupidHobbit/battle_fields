@@ -1,7 +1,11 @@
 import unittest
-from client.game_client import GameClient
 import json
 import redis
+if __name__ == '__main__':
+    import sys
+    sys.path.append('./')
+from client.game_client import GameClient
+from utilities import Point
 from timeit import timeit
 from random import random
 from time import sleep
@@ -35,9 +39,19 @@ class TestServerMethods(unittest.TestCase):
         self.assertNotEqual(id1, id2, "Same id returned")
 
     def test_next(self):
-        id = self.game_client.add_character(name=str(random()), cls='warrior')
+        name = str(random())
+        cls = 'warrior'
+        id = self.game_client.add_character(name=name, cls=cls)
         self.game_client.enter_game(id)
-        self.game_client.get_message()
+        self.game_client.move(Point(1, 2))
+        for x in self.game_client.get_message():
+            if x.id == id:
+                self.assertIn(x.name, name, "Wrong name")
+                self.assertIn(x.cls, cls, "Wrong class")
+                self.assertIn((x.dx, x.dy), (1, 2), "Wrong move method")
+                break
+        else:
+            raise Exception('Missing character')
 
 
 

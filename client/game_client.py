@@ -56,7 +56,7 @@ class GameClient():
         """
         Returns list of all visible characters. Character is described by dict.
         """
-        return self.send_request('NEXT')['characters']
+        return self.send_request('NEXT')
 
     def move(self, point: Point):
         """
