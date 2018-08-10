@@ -11,6 +11,9 @@ from client.camera import Camera
 from client.game_client import GameClient
 from utilities import Point
 
+MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0)
+             key.DOWN: Point(0, -1), key.UP: Point(0, 1)}
+
 class Game():
     def procced_packet(self, dt: float):
         pass
@@ -36,17 +39,9 @@ class Game():
 
         @window.event
         def on_key_press(symbol, modifiers):
-            if symbol == key.LEFT:
-                self.units[self.player_id].dir = Point(-1, 0) * self.units[self.player_id].speed
-                self.game_client.move(self.units[self.player_id].dir)
-            elif symbol == key.RIGHT:
-                self.units[self.player_id].dir = Point(1, 0) * self.units[self.player_id].speed
-                self.game_client.move(self.units[self.player_id].dir)
-            elif symbol == key.DOWN:
-                self.units[self.player_id].dir = Point(0, 1) * self.units[self.player_id].speed
-                self.game_client.move(self.units[self.player_id].dir)
-            elif symbol == key.UP:
-                self.units[self.player_id].dir = Point(0, -1) * self.units[self.player_id].speed
+
+            if symbol in MOVE_KEYS:
+                self.units[self.player_id].dir = MOVE_KEYS[symbol] * self.units[self.player_id].speed
                 self.game_client.move(self.units[self.player_id].dir)
 
         @window.event
