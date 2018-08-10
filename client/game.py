@@ -11,7 +11,7 @@ from client.game_client import GameClient
 from utilities import Point
 from client.character import Unit, Character
 from pyglet import clock
-from config import *
+from client.config import *
 
 
 MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0),
@@ -23,9 +23,9 @@ class Game():
         units = self.game_client.get_message()
         self.units.clear()
         for p in units:
-            arg = {'id': int(p['id']), 'name': p['name'],
-                   'pos': Point(int(p['x']), int(p['y'])),
-                   'dir': Point(int(p['dx']), int(p['dy']))
+            arg = {'id': float(p['id']), 'name': p['name'],
+                   'pos': Point(float(p['x']), float(p['y'])),
+                   'dir': Point(float(p['dx']), float(p['dy']))
                    }
             if p['name'] in CHARACTERS:
                 arg += {'nick': p['nick']}
@@ -33,7 +33,7 @@ class Game():
                 unit.hp = int(p['hp'])
             else:
                 unit = Unit(**arg)
-            self.units[p['id']] = unit
+            self.units[int(p['id'])] = unit
 
     def update_units(self, dt: float):
         map(Unit.update, self.units.values())
@@ -44,7 +44,7 @@ class Game():
     def start_action(self, name: str):
         pass
 
-    def __init__(self, window, game_client, host: str, port: int):
+    def __init__(self, window, game_client):
         self.units = {}
         self.gui = Gui(window)
         self.camera = Camera(window)
@@ -62,6 +62,7 @@ class Game():
         @window.event
         def on_key_press(symbol, modifiers):
             if symbol in MOVE_KEYS:
+                print(self.units)
                 self.units[self.player_id].dir = MOVE_KEYS[symbol] * self.units[self.player_id].speed
                 self.game_client.move(self.units[self.player_id].dir)
 
