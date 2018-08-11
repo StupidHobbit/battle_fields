@@ -1,7 +1,10 @@
 import json
 import socket
 from typing import List, Tuple, AnyStr
+import _thread
+
 from utilities import Point
+
 
 Characters = List[dict]
 Coord = Tuple[float, float]
@@ -12,6 +15,7 @@ class GameClient():
     def __init__(self, host: str, port: int):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
+        self.lock = _thread.allocate_lock()
 
     def __del__(self):
         self.sock.close()
@@ -19,9 +23,13 @@ class GameClient():
     def send_request(self, command, back=True, **kwargs):
         kwargs['command'] = command
         data = json.dumps(kwargs)
+        self.lock.acquire()
         self.sock.sendall(data.encode())
-        if back:
-            return json.loads(self.sock.recv(1024).decode())
+        #ans = None
+        #if back:
+        ans = json.loads(self.sock.recv(1024).decode())
+        self.lock.release()
+        return ans
 
     def auth(self, key: str):
         """

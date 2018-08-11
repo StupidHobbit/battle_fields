@@ -1,3 +1,5 @@
+from random import random
+
 import pyglet
 pyglet.options['debug_gl'] = False
 
@@ -8,7 +10,7 @@ from client.config import HOST, PORT
 
 client = GameClient(HOST, PORT)
 client.auth('123')
-id = client.add_character(name='Bill2', cls='warrior')
+id = client.add_character(name=str(random()), cls='warrior')
 client.enter_game(id)
 
 window = pyglet.window.Window(fullscreen=False)

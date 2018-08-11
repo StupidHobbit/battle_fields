@@ -3,6 +3,7 @@ import asyncio
 import json
 from random import randint
 from multiprocessing.dummy import Pool
+from time import sleep
 
 import redis
 
@@ -32,10 +33,10 @@ class GameHandler(asyncio.Protocol):
         command = message.get('command', '')
 
         ans = getattr(self, command, self.default)(message)
-        if ans:
-            message = json.dumps(ans)
-            print('Send: {!r}'.format(message))
-            self.transport.write(message.encode())
+        #if ans:
+        message = json.dumps(ans)
+        print('Send: {!r}'.format(message))
+        self.transport.write(message.encode())
 
     def default(self, data):
         return {"text": "Hello world", 'status': 200}
@@ -78,8 +79,10 @@ class GameHandler(asyncio.Protocol):
     def MOVE(self, data):
         if not self.id: return
         self.r.hmset(self.unit_name, {'dx': data['dx'], 'dy': data['dy']})
+        return {}
 
     def NEXT(self, data):
+        #sleep(1)
         if not self.id: return
         chars_id = self.r.georadiusbymember('map', self.id, VIEW_RADIUS)
         chars_bd_names = ['unit' + s for s in chars_id]
