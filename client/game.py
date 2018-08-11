@@ -12,6 +12,7 @@ from utilities import Point
 from client.character import Unit, Character
 from pyglet import clock
 from client.config import *
+from resources import CHARACTERS
 
 
 MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0),
@@ -19,21 +20,29 @@ MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0),
 
 
 class Game():
-    def procced_packet(self, dt: float):
+    def proceed_packet(self, dt: float):
         units = self.game_client.get_message()
-        self.units.clear()
+        t_units = {}
         for p in units:
-            arg = {'id': float(p['id']), 'name': p['name'],
-                   'pos': Point(float(p['x']), float(p['y'])),
-                   'dir': Point(float(p['dx']), float(p['dy']))
-                   }
-            if p['name'] in CHARACTERS:
-                arg += {'nick': p['nick']}
-                unit = Character(**arg)
-                unit.hp = int(p['hp'])
+            id = int(p['id'])
+            if id in self.units:
+                unit = self.units[id]
+                unit.pos = Point(float(p['x']), float(p['y']))
+                unit.dir = Point(float(p['dx']), float(p['dy']))
             else:
-                unit = Unit(**arg)
-            self.units[int(p['id'])] = unit
+                arg = {'id': id, 'name': p['name'],
+                    'pos': Point(float(p['x']), float(p['y'])),
+                    'dir': Point(float(p['dx']), float(p['dy']))
+                    }
+                if p['name'] in CHARACTERS:
+                    arg += {'nick': p['nick']}
+                    unit = Character(**arg)
+                else:
+                    unit = Unit(**arg)
+            if p['name'] in CHARACTERS:
+                unit.hp = p['hp']
+            t_units[id] = unit
+        self.units = t_units
 
     def update_units(self, dt: float):
         map(Unit.update, self.units.values())
@@ -52,7 +61,7 @@ class Game():
         self.game_client = game_client
         self.player_id = game_client.player_id
         clock.schedule_interval(self.update_units, TURN_DELAY)
-        clock.schedule_interval(self.procced_packet, PROCCED_DELAY)
+        clock.schedule_interval(self.proceed_packet, PROCCED_DELAY)
 
         @window.event
         def on_draw():
