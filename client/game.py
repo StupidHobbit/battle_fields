@@ -16,6 +16,7 @@ from client.camera import Camera
 from utilities import Point
 from client.character import Unit, Character
 from client.config import *
+from resources import CHARACTERS
 
 
 MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0),
@@ -34,19 +35,28 @@ class Game():
         if not self.messages_lock.locked(): return
         self.messages_lock.release()
         units = self.new_units
+        t_units = {}
         self.units.clear()
         for p in units:
-            arg = {'id': int(p['id']), 'name': p['name'],
-                   'pos': Point(float(p['x']), float(p['y'])),
-                   'dir': Point(float(p['dx']), float(p['dy']))
-                   }
-            if p['name'] in CHARACTERS:
-                arg += {'nick': p['nick']}
-                unit = Character(**arg)
-                unit.hp = int(p['hp'])
+            id = int(p['id'])
+            if id in self.units:
+                unit = self.units[id]
+                unit.pos = Point(float(p['x']), float(p['y']))
+                unit.dir = Point(float(p['dx']), float(p['dy']))
             else:
-                unit = Unit(**arg)
-            self.units[int(p['id'])] = unit
+                arg = {'id': id, 'name': p['name'],
+                       'pos': Point(float(p['x']), float(p['y'])),
+                       'dir': Point(float(p['dx']), float(p['dy']))
+                       }
+                if p['name'] in CHARACTERS:
+                    arg += {'nick': p['nick']}
+                    unit = Character(**arg)
+                else:
+                    unit = Unit(**arg)
+            if p['name'] in CHARACTERS:
+                unit.hp = p['hp']
+            t_units[id] = unit
+        self.units = t_units
 
     def update_units(self, dt: float):
         map(Unit.update, self.units.values())
