@@ -81,11 +81,9 @@ class GameHandler(asyncio.Protocol):
         return {}
 
     def NEXT(self, data):
-        #sleep(1)
         if not self.id: return
         chars_id = self.r.georadiusbymember('map', self.id, VIEW_RADIUS)
         chars_bd_names = ['unit' + s for s in chars_id]
-        print(chars_bd_names)
         res = self.pool.map(self.r.hgetall, chars_bd_names)
         return res
 
@@ -94,8 +92,6 @@ class GameHandler(asyncio.Protocol):
         self.r.delete(self.unit_name)
         self.r.zrem('map', self.id)
         self.r.publish('deleted_units', self.unit_name)
-
-
 
 
 class ServerException(Exception):

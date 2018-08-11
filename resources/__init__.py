@@ -1,5 +1,6 @@
 from pytmx.util_pyglet import load_pyglet
 import pyglet
+from os import path
 
 
 tiled_map = load_pyglet('resources/map.tmx')
@@ -9,4 +10,4 @@ CHARACTERS = {'warrior'}
 UNITS_PIC = {}
 
 for name in CHARACTERS:
-    UNITS_PIC[name] = pyglet.image.load(name + '.png')
+    UNITS_PIC[name] = pyglet.image.load(path.join("resources", name + '.png'))

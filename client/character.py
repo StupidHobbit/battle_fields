@@ -1,7 +1,10 @@
 import pyglet
+
 import resources
 from utilities import Point
 from resources import UNITS_PIC
+from client.render_manager import batch, units_group
+
 
 class Unit:
     def __init__(self, id: int, name: str, pos: Point, dir: Point):
@@ -10,7 +13,9 @@ class Unit:
         self._pos = pos
         self.dir = dir
         self.speed = 2
-        self.sprite = pyglet.sprite.Sprite(UNITS_PIC[name], x=pos.x, y=pos.y)
+        self.sprite = pyglet.sprite.Sprite(
+            UNITS_PIC[name], x=pos.x, y=pos.y, batch=batch, group=units_group
+        )
 
     @property
     def pos(self):
