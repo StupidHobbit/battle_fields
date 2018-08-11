@@ -5,7 +5,7 @@ from multiprocessing.dummy import Pool
 
 import redis
 
-from resources.__init__ import MAP_HEIGHT, MAP_WIDTH
+from resources import MAP_HEIGHT, MAP_WIDTH
 from server.config import REDIS_SOCKET_PATH, VIEW_RADIUS
 from utilities.sphere_coords import get_lon_lat
 
