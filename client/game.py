@@ -39,8 +39,8 @@ class Game():
                        'pos': Point(float(p['x']), float(p['y'])),
                        'dir': Point(float(p['dx']), float(p['dy']))
                        }
-                if p['name'] in CHARACTERS:
-                    arg += {'name': p['name']}
+                if p['cls'] in CHARACTERS:
+                    arg['name'] = p['name']
                     unit = Character(**arg)
                 else:
                     unit = Unit(**arg)

@@ -12,7 +12,7 @@ class Unit:
         self.cls = cls
         self._pos = pos
         self.dir = dir
-        self.speed = 2
+        self.speed = 100
         self.sprite = pyglet.sprite.Sprite(
             UNITS_PIC[cls], x=pos.x, y=pos.y, batch=batch, group=units_group
         )

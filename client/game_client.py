@@ -88,7 +88,7 @@ class GameClient():
         self.start_receiving_messages()
         self.start_sending_moves()
         if ans['status'] != 200:
-            raise AuthorizationError(ans['status'])
+            raise EnterGameError(ans['status'])
 
     def move(self, point: Point):
         """
@@ -97,17 +97,17 @@ class GameClient():
         self.next_move = point
 
     def start_sending_moves(self):
-        _thread.start_new_thread(self.do_sending_moves(), ())
+        _thread.start_new_thread(self.do_sending_moves, ())
 
     def do_sending_moves(self):
         self.is_sending_moves = True
         while self.is_sending_moves:
+            last_time = time()
             if not self.next_move is None:
                 point = self.next_move
                 self.next_move = None
-                last_time = time()
                 self.send_request('MOVE', dx=point.x, dy=point.y)
-                sleep(max(MOVE_DELAY - time() + last_time, 0))
+            sleep(max(MOVE_DELAY - time() + last_time, 0))
         _thread.exit_thread()
 
     def stop_sending_moves(self):
@@ -129,7 +129,9 @@ class GameClient():
         """
         Returns list of all visible characters. Character is described by dict.
         """
-        return self.units
+        units = self.units
+        self.units = None
+        return units
 
     def start_receiving_messages(self):
         _thread.start_new_thread(self.do_receiving_messages, ())
@@ -138,7 +140,8 @@ class GameClient():
         self.is_receiving_messages = True
         while self.is_receiving_messages:
             last_time = time()
-            self.units = self.send_request('NEXT')
+            temp = self.send_request('NEXT')
+            self.units = temp
             sleep(max(PROCCED_DELAY - time() + last_time, 0))
         _thread.exit_thread()
 

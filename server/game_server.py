@@ -69,6 +69,7 @@ class GameHandler(asyncio.Protocol):
         x, y = randint(0, MAP_WIDTH-1), randint(0, MAP_HEIGHT-1)
         char['x'], char['y'] = x, y
         char['id'] = id
+        char['hp'] = 10
         self.r.geoadd('map', *get_lon_lat(x, y), self.id)
         char['dx'], char['dy'] = 0, 0
         self.r.hmset(unit_name, char)
