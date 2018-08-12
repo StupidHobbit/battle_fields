@@ -35,16 +35,16 @@ class Game():
                 unit.pos = Point(float(p['x']), float(p['y']))
                 unit.dir = Point(float(p['dx']), float(p['dy']))
             else:
-                arg = {'id': id, 'name': p['name'],
+                arg = {'id': id, 'cls': p['cls'],
                        'pos': Point(float(p['x']), float(p['y'])),
                        'dir': Point(float(p['dx']), float(p['dy']))
                        }
                 if p['name'] in CHARACTERS:
-                    arg += {'nick': p['nick']}
+                    arg += {'name': p['name']}
                     unit = Character(**arg)
                 else:
                     unit = Unit(**arg)
-            if p['name'] in CHARACTERS:
+            if p['cls'] in CHARACTERS:
                 unit.hp = p['hp']
             t_units[id] = unit
         self.units = t_units
@@ -78,6 +78,13 @@ class Game():
             if symbol in MOVE_KEYS:
                 print(self.units)
                 self.units[self.player_id].dir = MOVE_KEYS[symbol] * self.units[self.player_id].speed
+                self.game_client.move(self.units[self.player_id].dir)
+
+        @window.event
+        def on_key_release(symbol, modifiers):
+            if symbol in MOVE_KEYS:
+                print(self.units)
+                self.units[self.player_id].dir = Point(0, 0)
                 self.game_client.move(self.units[self.player_id].dir)
 
         @window.event

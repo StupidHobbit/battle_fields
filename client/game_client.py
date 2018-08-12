@@ -40,7 +40,7 @@ class GameClient():
         self.lock = _thread.allocate_lock()
         self.is_receiving_messages = False
         self.units = []
-        self.move_thread = _thread.start_new_thread()
+        #self.move_thread = _thread.start_new_thread()
         self.next_move = None
         self.is_sending_moves = False
 

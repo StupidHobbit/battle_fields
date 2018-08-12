@@ -7,14 +7,14 @@ from client.render_manager import batch, units_group
 
 
 class Unit:
-    def __init__(self, id: int, name: str, pos: Point, dir: Point):
+    def __init__(self, id: int, cls: str, pos: Point, dir: Point):
         self.id = id
-        self.name = name
+        self.cls = cls
         self._pos = pos
         self.dir = dir
         self.speed = 2
         self.sprite = pyglet.sprite.Sprite(
-            UNITS_PIC[name], x=pos.x, y=pos.y, batch=batch, group=units_group
+            UNITS_PIC[cls], x=pos.x, y=pos.y, batch=batch, group=units_group
         )
 
     @property
@@ -30,9 +30,9 @@ class Unit:
         self.pos = self.pos + self.dir * dt
 
 class Character(Unit):
-    def __init__(self, id: int, name: str, pos: Point, dir: Point, nick: str):
-        Unit.__init__(self, id, name, pos, dir)
-        self.nick = nick
+    def __init__(self, id: int, cls: str, pos: Point, dir: Point, name: str):
+        Unit.__init__(self, id, cls, pos, dir)
+        self.name = name
         self.max_hp = 2 # Will load
         self.hp = self.max_hp
 
