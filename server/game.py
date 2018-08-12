@@ -4,6 +4,7 @@ from time import time, sleep
 import redis
 
 from server.config import REDIS_SOCKET_PATH, TURN_DELAY
+from utilities.sphere_coords import get_lon_lat
 
 
 class Game:
@@ -27,10 +28,13 @@ class Game:
         #self.  r.pipeline()
         unit = self.r.hmget(unit_name, ['x', 'y', 'dx', 'dy'])
         unit = list(map(float, unit))
+        x = unit[0] + self.dt * unit[2]
+        y = unit[1] + self.dt * unit[3]
         new_unit = {
-            'x': unit[0] + self.dt * unit[2],
-            'y': unit[1] + self.dt * unit[3]
+            'x': x,
+            'y': y
         }
+        self.r.geoadd('map', *get_lon_lat(x, y), unit_name[4:])
         self.r.hmset(unit_name, new_unit)
 
     def run_forever(self):
