@@ -4,7 +4,7 @@ import resources
 from utilities import Point
 from resources import UNITS_PIC
 from client.render_manager import batch, units_group
-
+from client.config import MOVE_DIST
 
 class Unit:
     def __init__(self, id: int, cls: str, pos: Point, dir: Point):
@@ -22,9 +22,10 @@ class Unit:
         return self._pos
 
     @pos.setter
-    def set_pos(self, pos: Point):
-        self._pos = pos
-        self.sprite.update(pos.x, pos.y)
+    def pos(self, pos: Point):
+        if pos.distance(self._pos) > MOVE_DIST:
+            self._pos = pos
+            self.sprite.update(pos.x, pos.y)
 
     def update(self, dt: float):
         self.pos = self.pos + self.dir * dt
