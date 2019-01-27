@@ -23,9 +23,8 @@ class Unit:
 
     @pos.setter
     def pos(self, pos: Point):
-        if pos.distance(self._pos) > MOVE_DIST:
-            self._pos = pos
-            self.sprite.update(pos.x, pos.y)
+        self._pos = pos
+        self.sprite.update(pos.x, pos.y)
 
     def update(self, dt: float):
         self.pos = self.pos + self.dir * dt

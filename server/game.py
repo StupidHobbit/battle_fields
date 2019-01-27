@@ -38,14 +38,14 @@ class Game:
         self.r.hmset(unit_name, new_unit)
 
     def run_forever(self):
-        self.last_time = time()
+        last_time = time()
         while True:
             cur_time = time()
-            self.dt = cur_time - self.last_time
-            self.last_time = cur_time
+            self.dt = cur_time - last_time
+            last_time = cur_time
             self.p.get_message()
             t = self.pool.map(self.update_unit, self.units_names)
-            sleep(TURN_DELAY - time() + self.last_time)
+            sleep(max(TURN_DELAY - time() + last_time, 0))
 
 
     def shutdown(self):

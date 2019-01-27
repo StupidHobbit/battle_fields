@@ -5,7 +5,7 @@ import _thread
 from time import time, sleep
 
 from utilities import Point
-from client.config import PROCCED_DELAY, MOVE_DELAY
+from client.config import PROCEED_DELAY, MOVE_DELAY
 
 Characters = List[dict]
 Coord = Tuple[float, float]
@@ -97,6 +97,7 @@ class GameClient():
         self.next_move = point
 
     def start_sending_moves(self):
+
         _thread.start_new_thread(self.do_sending_moves, ())
 
     def do_sending_moves(self):
@@ -142,7 +143,7 @@ class GameClient():
             last_time = time()
             temp = self.send_request('NEXT')
             self.units = temp
-            sleep(max(PROCCED_DELAY - time() + last_time, 0))
+            sleep(max(PROCEED_DELAY - time() + last_time, 0))
         _thread.exit_thread()
 
     def stop_receiving_messages(self):

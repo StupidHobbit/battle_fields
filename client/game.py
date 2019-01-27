@@ -10,7 +10,6 @@ from client.gui import Gui
 from client.map import Map
 from client.camera import Camera
 from client.render_manager import batch
-from client.config import *
 from client.camera import Camera
 from utilities import Point
 from client.character import Unit, Character
@@ -27,13 +26,16 @@ class Game():
         units = self.game_client.get_message()
         if not units: return
         t_units = {}
-        self.units.clear()
+        #self.units.clear()
         for p in units:
             id = int(p['id'])
             if id in self.units:
                 unit = self.units[id]
-                unit.pos = Point(float(p['x']), float(p['y']))
-                unit.dir = Point(float(p['dx']), float(p['dy']))
+                new_pos = Point(float(p['x']), float(p['y']))
+                new_dir = Point(float(p['dx']), float(p['dy']))
+                if new_pos.distance(unit.pos) > MOVE_DIST:
+                    unit.pos = new_pos
+                unit.dir = new_dir
             else:
                 arg = {'id': id, 'cls': p['cls'],
                        'pos': Point(float(p['x']), float(p['y'])),
@@ -50,7 +52,8 @@ class Game():
         self.units = t_units
 
     def update_units(self, dt: float):
-        map(Unit.update, self.units.values())
+        for unit in self.units.values():
+            unit.update(dt)
 
     def send_message(self, msg: str):
         pass
@@ -66,7 +69,7 @@ class Game():
         self.game_client = game_client
         self.player_id = game_client.player_id
         clock.schedule_interval(self.update_units, TURN_DELAY)
-        clock.schedule_interval(self.proceed_packet, PROCCED_DELAY/2)
+        clock.schedule_interval(self.proceed_packet, PROCEED_DELAY / 2)
 
         @window.event
         def on_draw():

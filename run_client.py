@@ -13,7 +13,7 @@ client.auth('123')
 id = client.add_character(name=str(random()), cls='warrior')
 client.enter_game(id)
 
-window = pyglet.window.Window(fullscreen=False)
+window = pyglet.window.Window(fullscreen=False, width = 1024, height = 700)
 game = Game(window, client)
 
 pyglet.app.run()
