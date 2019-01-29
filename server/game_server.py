@@ -9,6 +9,7 @@ import redis
 from resources import MAP_HEIGHT, MAP_WIDTH
 from server.config import REDIS_SOCKET_PATH, VIEW_RADIUS
 from utilities.sphere_coords import get_lon_lat
+from utilities.spatial import Point
 
 
 HOST, PORT = "localhost", 1488
@@ -19,7 +20,7 @@ SLEEP_TIME = 0.02
 class GameHandler(asyncio.Protocol):
     def connection_made(self, transport):
         peername = transport.get_extra_info('peername')
-        print('Connection from {}'.format(peername))
+        print('Connection from {peername}')
         self.transport = transport
         self.r = redis.Redis(unix_socket_path=REDIS_SOCKET_PATH, decode_responses=True)
         self.pool = Pool(5)
@@ -78,6 +79,7 @@ class GameHandler(asyncio.Protocol):
 
     def MOVE(self, data):
         if not self.id: return
+        #dir = Point(data['dx'], data['dy'])
         self.r.hmset(self.unit_name, {'dx': data['dx'], 'dy': data['dy']})
         return {}
 

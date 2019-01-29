@@ -4,7 +4,7 @@ from typing import List, Tuple, AnyStr
 import _thread
 from time import time, sleep
 
-from utilities import Point
+from utilities.spatial import Point
 from client.config import PROCEED_DELAY, MOVE_DELAY
 
 Characters = List[dict]
@@ -43,6 +43,7 @@ class GameClient():
         #self.move_thread = _thread.start_new_thread()
         self.next_move = None
         self.is_sending_moves = False
+        self.time_of_last_message = None
 
     def __del__(self):
         self.sock.close()
@@ -143,6 +144,7 @@ class GameClient():
             last_time = time()
             temp = self.send_request('NEXT')
             self.units = temp
+            self.time_of_last_message = time()
             sleep(max(PROCEED_DELAY - time() + last_time, 0))
         _thread.exit_thread()
 

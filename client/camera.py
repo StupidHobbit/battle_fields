@@ -1,7 +1,7 @@
 import pyglet
 from pyglet.gl import *
 
-from utilities import Point
+from utilities.spatial import Point
 
 
 class Camera:

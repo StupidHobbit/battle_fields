@@ -1,7 +1,7 @@
 import pyglet
 
 import resources
-from utilities import Point
+from utilities.spatial import Point
 from resources import UNITS_PIC
 from client.render_manager import batch, units_group
 from client.config import MOVE_DIST
