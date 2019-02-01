@@ -19,7 +19,7 @@ from client.game_client import GameClient
 
 
 MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0),
-             key.DOWN: Point(0, -1), key.UP: Point(0, 1)}
+             key.DOWN: Point(0, 1), key.UP: Point(0, -1)}
 
 
 class Game():

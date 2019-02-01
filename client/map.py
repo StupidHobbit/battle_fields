@@ -8,7 +8,7 @@ class Map:
     def __init__(self):
         self.groups = []
         tilewidth, tileheight = tiled_map.tilewidth, tiled_map.tileheight
-        height = tiled_map.height - 1
+        height = tiled_map.height
         layer_level_correction = 0
         for i, layer in enumerate(tiled_map.layers):
             if layer.name == "units":

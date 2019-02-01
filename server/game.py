@@ -38,8 +38,15 @@ class Game:
             'x': x,
             'y': y
         }
-        self.r.geoadd('map', *get_lon_lat(x, y), unit_name[4:])
-        self.r.hmset(unit_name, new_unit)
+        if len(self.obstacles.query_ball_point([x, y], 16)):
+            pass
+            #new_unit['x'] = unit[0]
+            #new_unit['y'] = unit[1]
+            #new_unit['dx'] = 0
+            #new_unit['dy'] = 0
+        else:
+            self.r.geoadd('map', *get_lon_lat(x, y), unit_name[4:])
+            self.r.hmset(unit_name, new_unit)
 
     def run_forever(self):
         last_time = time()
