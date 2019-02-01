@@ -1,6 +1,8 @@
 from math import sqrt
 from dataclasses import dataclass
 
+from scipy.spatial import cKDTree as KDTree
+
 
 @dataclass
 class Point:
@@ -28,4 +30,7 @@ class Point:
 
 class Quadtree:
     def __init__(self):
+        pass
+
+    def add_points(self, obj):
         pass

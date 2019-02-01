@@ -2,9 +2,12 @@ from multiprocessing.dummy import Pool
 from time import time, sleep
 
 import redis
+from scipy.spatial import cKDTree
 
 from server.config import REDIS_SOCKET_PATH, TURN_DELAY
 from utilities.sphere_coords import get_lon_lat
+from utilities.map import get_points_from_tmx
+from resources import tiled_map
 
 
 class Game:
@@ -15,6 +18,7 @@ class Game:
         self.p = self.r.pubsub(ignore_subscribe_messages=True)
         self.p.subscribe(**{'new_units': self.handle_new_unit})
         self.p.subscribe(**{'deleted_units': self.handle_deleted_unit})
+        self.obstacles = cKDTree(get_points_from_tmx(tiled_map))
 
     def handle_new_unit(self, message):
         self.units_names.add(message['data'])

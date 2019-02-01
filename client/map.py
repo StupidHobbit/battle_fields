@@ -15,6 +15,9 @@ class Map:
                 layer_level_correction = 6 - i
                 continue
             if layer.name == "obstacles":
+                for obj in layer:
+                    if hasattr(obj, 'points'):
+                        print(obj.points)
                 continue
             group = pyglet.graphics.OrderedGroup(i + layer_level_correction)
             sprites = [
