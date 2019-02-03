@@ -2,7 +2,7 @@ import asyncio
 import json
 from random import randint
 from multiprocessing.dummy import Pool
-from time import sleep
+from time import sleep, perf_counter as time
 
 import redis
 
@@ -28,17 +28,19 @@ class GameHandler(asyncio.Protocol):
 
     def data_received(self, data):
         message = json.loads(data.decode())
-        print('Data received: {!r}'.format(message))
-        command = message.get('command', '')
+        #print('Data received: {!r}'.format(message))
+        command = message.get('command')
 
         ans = getattr(self, command, self.default)(message)
-        #if ans:
         message = json.dumps(ans)
-        print('Send: {!r}'.format(message))
         self.transport.write(message.encode())
+        print('Send: {!r}'.format(message))
 
     def default(self, data):
         return {"text": "Hello world", 'status': 200}
+
+    def TIME(self, data):
+        return {'time': time()}
 
     def INFO(self, data):
         return {"players": self.r.get('players'), 'status': 200}
@@ -78,8 +80,12 @@ class GameHandler(asyncio.Protocol):
 
     def MOVE(self, data):
         if not self.id: return
-        #dir = Point(data['dx'], data['dy'])
-        self.r.hmset(self.unit_name, {'dx': data['dx'], 'dy': data['dy']})
+        unit = list(map(float, self.r.hmget(self.unit_name, ('x', 'y', 'dx', 'dy'))))
+        ping = time() - data['time']
+        dx, dy = data['dx'], data['dy']
+        x = unit[0] + (dx - unit[2]) * ping
+        y = unit[1] + (dy - unit[3]) * ping
+        self.r.hmset(self.unit_name, {'x': x, 'y': y, 'dx': dx, 'dy': dy})
         return {}
 
     def NEXT(self, data):
@@ -87,12 +93,10 @@ class GameHandler(asyncio.Protocol):
         chars_id = self.r.georadiusbymember('map', self.id, VIEW_RADIUS)
         chars_bd_names = ['unit' + s for s in chars_id]
         res = self.pool.map(self.r.hgetall, chars_bd_names)
-        return res
+        return res, time()
 
     def connection_lost(self, exc):
         if not self.id: return
-        self.r.delete(self.unit_name)
-        self.r.zrem('map', self.id)
         self.r.publish('deleted_units', self.unit_name)
 
 

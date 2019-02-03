@@ -14,7 +14,7 @@ def get_points_from_tmx(tiled_map):
                 if hasattr(obj, 'points'):
                     points = obj.points
                     n = len(points)
-                    for i in range(-1, n-1):
+                    for i in range(-1 if obj.closed else 0, n-1):
                         p1, p2 = Point(*points[i]), Point(*points[i+1])
                         vector = p2 - p1
                         points_number = ceil(abs(vector) / MINIMUM_DISTANCE_BETWEEN_OBSTACLES)

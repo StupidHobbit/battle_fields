@@ -1,4 +1,4 @@
-from time import time, sleep
+from time import perf_counter as time, sleep
 
 import pyglet
 from pyglet.gl import *
@@ -24,9 +24,10 @@ MOVE_KEYS = {key.LEFT: Point(-1, 0), key.RIGHT: Point(1, 0),
 
 class Game():
     def proceed_packet(self, dt: float):
-        units = self.game_client.get_message()
+        units, timestamp = self.game_client.get_message()
         if not units: return
-        ping = time() - self.game_client.time_of_last_message
+        ping = time() - timestamp
+        print(ping)
         t_units = {}
         #self.units.clear()
         for p in units:

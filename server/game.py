@@ -25,19 +25,18 @@ class Game:
         print('New unit with name %s created' % message['data'])
 
     def handle_deleted_unit(self, message):
-        self.units_names.remove(message['data'])
-        print('New unit with name %s deleted' % message['data'])
+        unit_name = message['data']
+        self.r.zrem('map', unit_name[4:])
+        self.r.delete(unit_name)
+        self.units_names.remove(unit_name)
+        print('Unit with name %s deleted' % message['data'])
 
     def update_unit(self, unit_name):
-        #self.  r.pipeline()
         unit = self.r.hmget(unit_name, ['x', 'y', 'dx', 'dy'])
+        if not unit: return
         unit = list(map(float, unit))
         x = unit[0] + self.dt * unit[2]
         y = unit[1] + self.dt * unit[3]
-        new_unit = {
-            'x': x,
-            'y': y
-        }
         if len(self.obstacles.query_ball_point([x, y], 16)):
             pass
             #new_unit['x'] = unit[0]
@@ -45,6 +44,10 @@ class Game:
             #new_unit['dx'] = 0
             #new_unit['dy'] = 0
         else:
+            new_unit = {
+                'x': x,
+                'y': y
+            }
             self.r.geoadd('map', *get_lon_lat(x, y), unit_name[4:])
             self.r.hmset(unit_name, new_unit)
 
@@ -56,8 +59,7 @@ class Game:
             last_time = cur_time
             self.p.get_message()
             t = self.pool.map(self.update_unit, self.units_names)
-            sleep(max(TURN_DELAY - time() + last_time, 0))
-
+            #sleep(max(TURN_DELAY - time() + last_time, 0))
 
     def shutdown(self):
         self.p.close()

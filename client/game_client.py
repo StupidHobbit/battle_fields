@@ -2,10 +2,11 @@ import json
 import socket
 from typing import List, Tuple, AnyStr
 import _thread
-from time import time, sleep
+from time import perf_counter as time, sleep
+from statistics import median, mean
 
 from utilities.spatial import Point
-from client.config import PROCEED_DELAY, MOVE_DELAY
+from client.config import *
 
 Characters = List[dict]
 Coord = Tuple[float, float]
@@ -43,7 +44,9 @@ class GameClient():
         #self.move_thread = _thread.start_new_thread()
         self.next_move = None
         self.is_sending_moves = False
-        self.time_of_last_message = None
+        self.timestamp = None
+        self.server_time_delta = 0
+        self.sync_time()
 
     def __del__(self):
         self.sock.close()
@@ -55,6 +58,24 @@ class GameClient():
             self.sock.sendall(data.encode())
             ans = json.loads(self.sock.recv(1024).decode())
         return ans
+
+    def time(self):
+        return float(self.send_request('TIME')['time'])
+
+    def sync_time(self):
+        d = []
+        for i in range(SYNCHRONISATION_TIMES):
+            last_time = time()
+            server_time = self.time()
+            ping = (time() - last_time) / 2
+            client_time = time()
+            delta = server_time + ping - client_time
+            d.append(delta)
+        m = median(d)
+        d.sort(key=lambda x: abs(x - m), reverse=True)
+        d = d[SYNCHRONISATION_TIMES // 5:]
+        self.server_time_delta = mean(d)
+        print(self.server_time_delta)
 
     def auth(self, key: str):
         """
@@ -105,10 +126,10 @@ class GameClient():
         self.is_sending_moves = True
         while self.is_sending_moves:
             last_time = time()
-            if not self.next_move is None:
+            if self.next_move is not None:
                 point = self.next_move
                 self.next_move = None
-                self.send_request('MOVE', dx=point.x, dy=point.y)
+                self.send_request('MOVE', dx=point.x, dy=point.y, time=time()+self.server_time_delta)
             sleep(max(MOVE_DELAY - time() + last_time, 0))
         _thread.exit_thread()
 
@@ -127,13 +148,13 @@ class GameClient():
         """
         self.send_request('ACTN', name=name, id=id, coord=coord)
 
-    def get_message(self) -> Characters:
+    def get_message(self) -> Tuple[Characters, float]:
         """
         Returns list of all visible characters. Character is described by dict.
         """
-        units = self.units
-        self.units = None
-        return units
+        units, timestamp = self.units, self.timestamp
+        self.units, self.timestamp = None, None
+        return units, timestamp
 
     def start_receiving_messages(self):
         _thread.start_new_thread(self.do_receiving_messages, ())
@@ -143,8 +164,8 @@ class GameClient():
         while self.is_receiving_messages:
             last_time = time()
             temp = self.send_request('NEXT')
-            self.units = temp
-            self.time_of_last_message = time()
+            self.units, self.timestamp = temp
+            self.timestamp -= self.server_time_delta
             sleep(max(PROCEED_DELAY - time() + last_time, 0))
         _thread.exit_thread()
 
